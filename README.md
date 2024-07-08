@@ -83,7 +83,7 @@ OLLAMA_MAX_LOADED_MODELS=4
 
    ```shell
    conda activate moa
-   python launch.py
+   gradio app.py
    ```
 
 3. Open your web browser and navigate to the URL provided by Gradio (usually http://localhost:7860).
