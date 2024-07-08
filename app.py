@@ -169,24 +169,56 @@ def add_to_archival_memory(content):
 def create_gradio_interface():
     theme = gr.themes.Base(
         primary_hue="green",
-        secondary_hue="stone",
+        secondary_hue="orange",  # Changed from "brown" to "orange"
         neutral_hue="gray",
         font=("Helvetica", "sans-serif"),
     ).set(
-        body_background_fill="linear-gradient(to right, #2c5e1a, #4a3728)",
-        body_background_fill_dark="linear-gradient(to right, #1a3c0f, #2e2218)",
-        button_primary_background_fill="#4a3728",
-        button_primary_background_fill_hover="#5c4636",
-        block_title_text_color="#e0d8b0",
-        block_label_text_color="#c1b78f",
+        body_background_fill="linear-gradient(to right, #1a2f0f, #3d2b1f)",
+        body_background_fill_dark="linear-gradient(to right, #0f1a09, #261a13)",
+        button_primary_background_fill="#3d2b1f",
+        button_primary_background_fill_hover="#4e3827",
+        block_title_text_color="#d3c6aa",
+        block_label_text_color="#b8a888",
+        input_background_fill="#f0e6d2",
+        input_background_fill_dark="#2a1f14",
+        input_border_color="#7d6d58",
+        input_border_color_dark="#5c4c3d",
+        checkbox_background_color="#3d2b1f",
+        checkbox_background_color_selected="#5e4534",
+        slider_color="#7d6d58",
+        slider_color_dark="#5c4c3d",
     )
 
-    with gr.Blocks(theme=theme) as demo:
+    css = """
+    .gradio-container {
+        background-image: url('file/assets/mycelium_bg.png');
+        background-size: cover;
+        background-attachment: fixed;
+    }
+    .gr-box {
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        background-color: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+    }
+    .gr-button {
+        border-radius: 25px;
+    }
+    .gr-input {
+        border-radius: 10px;
+    }
+    .gr-form {
+        border-radius: 15px;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    """
+
+    with gr.Blocks(theme=theme, css=css) as demo:
         gr.Markdown(
             """
-            # Customizable Mixture of Agents (MoA) Chat
+            # Mycomind Daemon: Advanced Mixture-of-Agents (MoA) Cognitive Assistant
             
-            Configure your Mixture of Agents and chat with it!
+            Harness the power of interconnected AI models inspired by mycelial networks.
             """
         )
         
