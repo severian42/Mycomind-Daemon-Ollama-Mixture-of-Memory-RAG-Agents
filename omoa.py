@@ -325,7 +325,7 @@ class OllamaMixtureOfAgents:
         self.agent_event_memory.add_event(role, message)
 
         # Update retrieval memory
-        self.agent_retrieval_memory.add(message)
+        self.agent_retrieval_memory.insert(message)
 
     async def stream_response(self, input_message: str):
         final_response, _ = await self.get_response(input_message)
@@ -340,7 +340,7 @@ class OllamaMixtureOfAgents:
         return self.agent_retrieval_memory.search(query)
 
     def add_to_archival_memory(self, content: str):
-        self.agent_retrieval_memory.add(content)
+        self.agent_retrieval_memory.insert(content)
 
     def clear_archival_memory(self):
         try:
@@ -366,7 +366,7 @@ class OllamaMixtureOfAgents:
             # Remove the old content
             self.agent_retrieval_memory.retrieval_memory.collection.delete(ids=[results[0]['id']])
             # Add the new content
-            self.agent_retrieval_memory.add(new_content)
+            self.agent_retrieval_memory.insert(new_content)
             return f"Archival memory entry updated: '{old_content}' replaced with '{new_content}'"
         else:
             return f"Content '{old_content}' not found in archival memory."
