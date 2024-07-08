@@ -1,0 +1,17 @@
+fire
+loguru
+datasets
+python-dotenv
+langchain
+langchain_community
+openai
+crewai == 0.30.10
+crewai-tools
+requests
+gradio
+trafilatura
+duckduckgo-search
+colorama
+sentence_transformers
+ragatouille
+PyPDF2
