@@ -370,7 +370,24 @@ def create_gradio_interface():
                 refresh_rag_status_btn = gr.Button("Refresh RAG Status")
 
             def update_rag_config(chunk_size, chunk_overlap, k_value):
-                moa_config["mixture"].rag.update_config(chunk_size=chunk_size, chunk_overlap=chunk_overlap, k=k_value)
+                rag = moa_config["mixture"].rag
+                
+                # Update attributes if they exist
+                if hasattr(rag, 'chunk_size'):
+                    rag.chunk_size = chunk_size
+                if hasattr(rag, 'chunk_overlap'):
+                    rag.chunk_overlap = chunk_overlap
+                if hasattr(rag, 'k'):
+                    rag.k = k_value
+                
+                # If there's a specific method to update configuration, use it
+                if hasattr(rag, 'update_config'):
+                    rag.update_config(chunk_size=chunk_size, chunk_overlap=chunk_overlap, k=k_value)
+                
+                # If there's a method to reinitialize the index with new settings, call it
+                if hasattr(rag, 'reinitialize_index'):
+                    rag.reinitialize_index()
+                
                 return "RAG configuration updated successfully"
 
             def get_rag_status():
