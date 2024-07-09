@@ -18,3 +18,4 @@ PyPDF2
 fastapi 
 uvicorn 
 gradio_client
+llama-cpp-agent
