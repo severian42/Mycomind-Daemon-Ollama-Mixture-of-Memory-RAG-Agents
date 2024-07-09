@@ -185,6 +185,8 @@ class OllamaMixtureOfAgents:
             keep_separator=True
         )
 
+        self.primary_model = final_agent.model  # Add this line
+
     def update_memory(self, message, role):
         # Update event memory
         self.agent_event_memory.add_event(role, message)
@@ -303,12 +305,20 @@ class OllamaMixtureOfAgents:
         query_extension_agent = OllamaAgent(self.final_agent.model, "QueryExtensionAgent", 
             "You are a world class query extension algorithm capable of extending queries by writing new queries. Do not answer the queries, simply provide a list of additional queries in JSON format.")
         
-        extension_output = await query_extension_agent.generate_response(f"Consider the following query: {input_message}")
+        extension_output, _ = await query_extension_agent.generate_response(f"Consider the following query: {input_message}")
         
         try:
-            queries = QueryExtension.model_validate(json.loads(extension_output[0]))
+            # Try to parse as a dictionary first
+            extension_data = json.loads(extension_output)
+            if isinstance(extension_data, dict):
+                queries = QueryExtension.model_validate(extension_data)
+            elif isinstance(extension_data, list):
+                # If it's a list, wrap it in a dictionary
+                queries = QueryExtension.model_validate({"queries": extension_data})
+            else:
+                raise ValueError("Unexpected JSON structure")
         except json.JSONDecodeError:
-            print(f"Failed to parse JSON: {extension_output[0]}")
+            print(f"Failed to parse JSON: {extension_output}")
             queries = QueryExtension(queries=[])
         except Exception as e:
             print(f"Error processing query extension: {str(e)}")
@@ -383,6 +393,15 @@ class OllamaMixtureOfAgents:
         self.rag.add_document(new_content)
         self.document_count += 1  # Increment document count when adding a document
         return f"New content '{new_content}' added to archival memory. Note: Old content not removed due to limitations of the current implementation."
+
+    @property
+    def model(self):
+        return self.primary_model
+
+    @model.setter
+    def model(self, value):
+        self.primary_model = value
+        self.final_agent.model = value
 
 def create_default_agents():
     return {
