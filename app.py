@@ -243,7 +243,7 @@ def create_gradio_interface():
     with gr.Blocks(theme=theme, css=css) as demo:
         gr.Markdown(
             """
-            # Mycomind Daemon: Advanced Mixture-of-Agents (MoA) Cognitive Assistant
+            # Mycomind Daemon: Advanced Mixture-of-Memory-RAG-Agents (MoMRA) Cognitive Assistant
             
             Harness the power of interconnected AI models inspired by mycelial networks.
             """
