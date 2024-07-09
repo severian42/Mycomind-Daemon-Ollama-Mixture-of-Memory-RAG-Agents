@@ -8,9 +8,7 @@ Mycomind Daemon is an advanced implementation of a Mixture-of-Memory-RAG-Agents 
 - **Advanced Memory System**: Utilizes Core Memory, Archival Memory, and Conversation History for enhanced context retention.
 - **Customizable Model Selection**: Users can choose and configure both reference and aggregate models.
 - **Adaptive Generation Parameters**: Fine-tune generation with customizable temperature, max tokens, and processing rounds.
-- **Streaming Responses**: Experience fluid, stream-based response generation.
 - **User-Friendly Interface**: Intuitive Gradio interface for easy interaction.
-- **Flexible Conversation Modes**: Support for both single-turn and multi-turn conversations.
 - **Integrated Web Search**: Capability to retrieve up-to-date information from the internet.
 - **RAG (Retrieval-Augmented Generation)**: Enhances responses with relevant information from a document database.
 - **Document Processing**: Ability to upload and process various document types (TXT, PDF, CSV) for information retrieval.
