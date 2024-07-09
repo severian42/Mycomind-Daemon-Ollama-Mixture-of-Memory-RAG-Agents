@@ -156,7 +156,7 @@ class OllamaMixtureOfAgents:
         self.max_tokens = max_tokens
         self.rounds = rounds
         self.conversation_history = []
-        self.web_search_enabled = False
+        self.web_search_enabled = True
         
         # Get the directory of the current script
         current_dir = os.path.dirname(os.path.abspath(__file__))
