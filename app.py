@@ -60,6 +60,7 @@ def initialize_moa():
         max_tokens=2048,
         rounds=1
     )
+    moa_config["mixture"].web_search_enabled = True  
     moa_config["mixture"].agent_core_memory = agent_core_memory
     moa_config["mixture"].agent_event_memory = agent_event_memory
     print("Mixture of Agents initialized successfully!")
@@ -425,7 +426,7 @@ def create_gradio_interface():
             with gr.Row():
                 with gr.Column():
                     gr.Markdown("### Web Search")
-                    web_search_toggle = gr.Checkbox(label="Enable Web Search", value=False)
+                    web_search_toggle = gr.Checkbox(label="Enable Web Search", value=True)
                     web_search_status = gr.Textbox(label="Web Search Status", interactive=False)
 
                 with gr.Column():
@@ -439,20 +440,20 @@ def create_gradio_interface():
                 stream_output_toggle = gr.Checkbox(label="Stream Output", value=True)
                 debug_mode_toggle = gr.Checkbox(label="Debug Mode", value=False)
 
-            def refresh_core_memory():
-                return moa_config["mixture"].load_core_memory()
+            #def refresh_core_memory():
+            #    return moa_config["mixture"].load_core_memory()
 
-            def update_core_memory(new_core_memory_str):
-                try:
-                    new_core_memory = json.loads(new_core_memory_str)
-                    moa_config["mixture"].core_memory = new_core_memory
-                    moa_config["mixture"].agent_core_memory.update_core_memory(new_core_memory)
-                    moa_config["mixture"].agent_core_memory.save_core_memory(moa_config["mixture"].core_memory_file)
-                    return json.dumps(new_core_memory, indent=2), "Core memory updated successfully"
-                except json.JSONDecodeError:
-                    return json.dumps(moa_config["mixture"].load_core_memory(), indent=2), "Error: Invalid JSON format"
-                except Exception as e:
-                    return json.dumps(moa_config["mixture"].load_core_memory(), indent=2), f"Error updating core memory: {str(e)}"
+            #def update_core_memory(new_core_memory_str):
+            #    try:
+            #        new_core_memory = json.loads(new_core_memory_str)
+            #        moa_config["mixture"].core_memory = new_core_memory
+            #        moa_config["mixture"].agent_core_memory.update_core_memory(new_core_memory)
+            #        moa_config["mixture"].agent_core_memory.save_core_memory(moa_config["mixture"].core_memory_file)
+            #        return json.dumps(new_core_memory, indent=2), "Core memory updated successfully"
+            #    except json.JSONDecodeError:
+            #        return json.dumps(moa_config["mixture"].load_core_memory(), indent=2), "Error: Invalid JSON format"
+            #    except Exception as e:
+            #        return json.dumps(moa_config["mixture"].load_core_memory(), indent=2), f"Error updating core memory: {str(e)}"
 
             def update_settings(rounds, temperature, max_tokens, stream_output, debug_mode):
                 moa_config["mixture"].rounds = rounds
