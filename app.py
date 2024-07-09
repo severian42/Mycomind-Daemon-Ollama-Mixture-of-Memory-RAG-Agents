@@ -1,8 +1,9 @@
 import gradio as gr
 import os
+import json
 from dotenv import load_dotenv
 from omoa import OllamaAgent, OllamaMixtureOfAgents, DEFAULT_PROMPTS, create_default_agents
-from MemoryAssistant.memory import AgentCoreMemory, AgentRetrievalMemory, AgentEventMemory
+from MemoryAssistant.memory import AgentCoreMemory, AgentEventMemory
 from MemoryAssistant.prompts import wrap_user_message_in_xml_tags_json_mode
 from llama_cpp_agent.chat_history.messages import Roles
 
@@ -31,7 +32,6 @@ moa_config = {
 
 # Initialize memory components
 agent_core_memory = AgentCoreMemory(["persona", "user", "scratchpad"], core_memory_file="MemoryAssistant/core_memory.json")
-agent_retrieval_memory = AgentRetrievalMemory()
 agent_event_memory = AgentEventMemory()
 
 def create_mixture():
@@ -42,7 +42,6 @@ def create_mixture():
 
     # Set the memory components after initialization
     moa_config["mixture"].agent_core_memory = agent_core_memory
-    moa_config["mixture"].agent_retrieval_memory = agent_retrieval_memory
     moa_config["mixture"].agent_event_memory = agent_event_memory
 
 def initialize_moa():
@@ -54,7 +53,15 @@ def initialize_moa():
         default_agents["HistoricalContextAgent"],
         default_agents["ScienceTruthAgent"]
     ]
-    create_mixture()
+    moa_config["mixture"] = OllamaMixtureOfAgents(
+        moa_config["reference_agents"],
+        moa_config["aggregate_agent"],
+        temperature=0.6,
+        max_tokens=2048,
+        rounds=1
+    )
+    moa_config["mixture"].agent_core_memory = agent_core_memory
+    moa_config["mixture"].agent_event_memory = agent_event_memory
     print("Mixture of Agents initialized successfully!")
 
 # Call initialize_moa() at the start of the application
@@ -116,6 +123,13 @@ async def chat(message, history):
     return final_output, processing_info
 
 
+def update_memory(self, message, role):
+    # Update event memory
+    self.agent_event_memory.add_event(role, message)
+
+    # Update RAG
+    self.rag.add_document(message)
+
 def get_model_params(model_name):
     # Define custom parameters for each model
     params = {
@@ -159,14 +173,25 @@ def edit_core_memory(section, key, value):
     return f"Core memory updated: {section}.{key} = {value}"
 
 def search_archival_memory(query):
-    results = agent_retrieval_memory.search(query)
+    results = moa_config["mixture"].search_archival_memory(query)
     return f"Archival memory search results for '{query}':\n{results}"
 
 def add_to_archival_memory(content):
-    agent_retrieval_memory.insert(content)  # Changed from add to insert
-    return f"Added to archival memory: {content}"
+    if isinstance(moa_config["mixture"], OllamaMixtureOfAgents):
+        moa_config["mixture"].add_to_archival_memory(content)
+        return f"Added to archival memory: {content}"
+    return f"Failed to add to archival memory: {content}. MoA not initialized properly."
+
+def toggle_web_search(enabled):
+    if isinstance(moa_config["mixture"], OllamaMixtureOfAgents):
+        return moa_config["mixture"].toggle_web_search(enabled)
+    return "Error: MoA not initialized properly."
+
+
+
 
 def create_gradio_interface():
+    global moa_config
     theme = gr.themes.Base(
         primary_hue="green",
         secondary_hue="orange",  # Changed from "brown" to "orange"
@@ -291,31 +316,10 @@ def create_gradio_interface():
         with gr.Tab("Memory Management"):
             with gr.Row():
                 with gr.Column():
-                    core_section = gr.Textbox(label="Core Memory Section")
-                    core_key = gr.Textbox(label="Core Memory Key")
-                    core_value = gr.Textbox(label="Core Memory Value")
-                    edit_core_btn = gr.Button("Edit Core Memory")
-                    core_status = gr.Textbox(label="Core Memory Status", interactive=False)
-                    
-                    # Add a new button to clear core memory
-                    clear_core_btn = gr.Button("Clear Core Memory")
-                    clear_core_status = gr.Textbox(label="Clear Core Memory Status", interactive=False)
-                
-                with gr.Column():
                     archival_query = gr.Textbox(label="Archival Memory Search Query")
                     search_archival_btn = gr.Button("Search Archival Memory")
                     archival_results = gr.Textbox(label="Archival Memory Results", interactive=False)
-                
-                with gr.Column():
-                    archival_content = gr.Textbox(label="Content to Add to Archival Memory")
-                    add_archival_btn = gr.Button("Add to Archival Memory")
-                    archival_status = gr.Textbox(label="Archival Memory Status", interactive=False)
-                
-                with gr.Column():
-                    upload_file = gr.File(label="Upload Document")
-                    upload_btn = gr.Button("Process Document")
-                    upload_status = gr.Textbox(label="Upload Status", interactive=False)
-                
+
                 with gr.Column():
                     gr.Markdown("### Archival Memory Management")
                     clear_archival_btn = gr.Button("Clear Archival Memory")
@@ -326,16 +330,144 @@ def create_gradio_interface():
                     new_content = gr.Textbox(label="New Content")
                     edit_archival_btn = gr.Button("Edit Archival Memory")
                     edit_archival_status = gr.Textbox(label="Edit Archival Memory Status", interactive=False)
-        
+
+                with gr.Column():
+                    archival_content = gr.Textbox(label="Content to Add to Archival Memory")
+                    add_archival_btn = gr.Button("Add to Archival Memory")
+                    archival_status = gr.Textbox(label="Archival Memory Status", interactive=False)
+
+                # with gr.Row():
+                #     gr.Markdown("### Core Memory Viewer")
+                #     core_memory_viewer = gr.JSON(label="Current Core Memory", value=moa_config["mixture"].load_core_memory())
+                #     refresh_core_memory_btn = gr.Button("Refresh Core Memory View")
+
+                # with gr.Row():
+                #     gr.Markdown("### Core Memory Editor")
+                #     core_memory_editor = gr.Textbox(label="Edit Core Memory", value=json.dumps(moa_config["mixture"].load_core_memory(), indent=2), lines=10, max_lines=20)
+                #     update_core_memory_btn = gr.Button("Update Core Memory")
+                #     core_memory_status = gr.Textbox(label="Core Memory Update Status", interactive=False)
+                
+
+                
+        with gr.Tab("RAG Management"):
+            with gr.Row():
+                with gr.Column():        
+                    upload_file = gr.File(label="Upload Document")
+                    upload_btn = gr.Button("Process Document")
+                    upload_status = gr.Textbox(label="Upload Status", interactive=False)
+                
+                with gr.Column():
+                    gr.Markdown("### RAG Configuration")
+                    chunk_size = gr.Slider(minimum=128, maximum=1024, value=512, step=64, label="Chunk Size")
+                    chunk_overlap = gr.Slider(minimum=0, maximum=256, value=0, step=32, label="Chunk Overlap")
+                    k_value = gr.Slider(minimum=1, maximum=10, value=5, step=1, label="Number of Retrieved Documents (k)")
+            
+            with gr.Row():
+                gr.Markdown("### RAG Status")
+                rag_status = gr.JSON(label="Current RAG Status")
+                refresh_rag_status_btn = gr.Button("Refresh RAG Status")
+
+            def update_rag_config(chunk_size, chunk_overlap, k_value):
+                moa_config["mixture"].rag.update_config(chunk_size=chunk_size, chunk_overlap=chunk_overlap, k=k_value)
+                return "RAG configuration updated successfully"
+
+            def get_rag_status():
+                return {
+                    "Document Count": moa_config["mixture"].rag.get_document_count(),
+                    "Index Size": moa_config["mixture"].rag.get_index_size(),
+                    "Current Configuration": moa_config["mixture"].rag.get_config()
+                }
+
+            update_rag_config_btn = gr.Button("Update RAG Configuration")
+            update_rag_config_status = gr.Textbox(label="Update Status", interactive=False)
+
+            update_rag_config_btn.click(
+                update_rag_config,
+                inputs=[chunk_size, chunk_overlap, k_value],
+                outputs=[update_rag_config_status]
+            )
+
+            refresh_rag_status_btn.click(
+                get_rag_status,
+                outputs=[rag_status]
+            )
+
+        with gr.Tab("Settings"):
+            with gr.Row():
+                with gr.Column():
+                    gr.Markdown("### Web Search")
+                    web_search_toggle = gr.Checkbox(label="Enable Web Search", value=False)
+                    web_search_status = gr.Textbox(label="Web Search Status", interactive=False)
+
+                with gr.Column():
+                    gr.Markdown("### Processing Parameters")
+                    rounds_slider = gr.Slider(minimum=1, maximum=5, value=1, step=1, label="Processing Rounds")
+                    temperature_slider = gr.Slider(minimum=0.1, maximum=2.0, value=0.7, step=0.1, label="Temperature")
+                    max_tokens_slider = gr.Slider(minimum=100, maximum=4096, value=1000, step=100, label="Max Tokens")
+
+            with gr.Row():
+                gr.Markdown("### Additional Settings")
+                stream_output_toggle = gr.Checkbox(label="Stream Output", value=True)
+                debug_mode_toggle = gr.Checkbox(label="Debug Mode", value=False)
+
+            def refresh_core_memory():
+                return moa_config["mixture"].load_core_memory()
+
+            def update_core_memory(new_core_memory_str):
+                try:
+                    new_core_memory = json.loads(new_core_memory_str)
+                    moa_config["mixture"].core_memory = new_core_memory
+                    moa_config["mixture"].agent_core_memory.update_core_memory(new_core_memory)
+                    moa_config["mixture"].agent_core_memory.save_core_memory(moa_config["mixture"].core_memory_file)
+                    return json.dumps(new_core_memory, indent=2), "Core memory updated successfully"
+                except json.JSONDecodeError:
+                    return json.dumps(moa_config["mixture"].load_core_memory(), indent=2), "Error: Invalid JSON format"
+                except Exception as e:
+                    return json.dumps(moa_config["mixture"].load_core_memory(), indent=2), f"Error updating core memory: {str(e)}"
+
+            def update_settings(rounds, temperature, max_tokens, stream_output, debug_mode):
+                moa_config["mixture"].rounds = rounds
+                moa_config["mixture"].temperature = temperature
+                moa_config["mixture"].max_tokens = max_tokens
+                moa_config["mixture"].stream_output = stream_output
+                moa_config["mixture"].debug_mode = debug_mode
+                return "Settings updated successfully"
+
+            # update_core_memory_btn.click(
+            #     update_core_memory,
+            #     inputs=[core_memory_editor],
+            #     outputs=[core_memory_status]
+            # )
+
+            # refresh_core_memory_btn.click(
+            #     refresh_core_memory,
+            #     outputs=[core_memory_viewer]
+            # )
+
+            # update_core_memory_btn.click(
+            #     update_core_memory,
+            #     inputs=[core_memory_editor],
+            #     outputs=[core_memory_viewer, core_memory_status]
+            # )
+
+            settings_update_btn = gr.Button("Update Settings")
+            settings_update_status = gr.Textbox(label="Settings Update Status", interactive=False)
+
+            settings_update_btn.click(
+                update_settings,
+                inputs=[rounds_slider, temperature_slider, max_tokens_slider, stream_output_toggle, debug_mode_toggle],
+                outputs=[settings_update_status]
+            )
+
+            web_search_toggle.change(
+                toggle_web_search,
+                inputs=[web_search_toggle],
+                outputs=[web_search_status]
+            )
+
         msg.submit(chat, inputs=[msg, chatbot], outputs=[chatbot, processing_log])
         send_btn.click(chat, inputs=[msg, chatbot], outputs=[chatbot, processing_log])
         clear_btn.click(lambda: ([], ""), outputs=[chatbot, processing_log])
-        
-        edit_core_btn.click(
-            edit_core_memory,
-            inputs=[core_section, core_key, core_value],
-            outputs=[core_status]
-        )
         
         search_archival_btn.click(
             search_archival_memory,
@@ -347,11 +479,6 @@ def create_gradio_interface():
             add_to_archival_memory,
             inputs=[archival_content],
             outputs=[archival_status]
-        )
-
-        clear_core_btn.click(
-            clear_core_memory,
-            outputs=[clear_core_status]
         )
 
         upload_btn.click(
