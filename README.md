@@ -102,17 +102,14 @@ API_BASE_2=http://localhost:11434/v1
 API_KEY_2=ollama
 
 MAX_TOKENS=4096
-TEMPERATURE=0.7
+TEMPERATURE=0.6
 ROUNDS=1
 
-MODEL_AGGREGATE=llama3:70b-instruct-q6_K
+MODEL_AGGREGATE=mistral:7b
 
-MODEL_REFERENCE_1=phi3:latest 
-MODEL_REFERENCE_2=llama3:latest
-MODEL_REFERENCE_3=phi3:3.8b-mini-instruct-4k-fp16
-
-OLLAMA_NUM_PARALLEL=4  
-OLLAMA_MAX_LOADED_MODELS=4
+MODEL_REFERENCE_1=aya:latest
+MODEL_REFERENCE_2=yi:latest
+MODEL_REFERENCE_3=qwen2:7b
 ```
 
 ## Running the Application
