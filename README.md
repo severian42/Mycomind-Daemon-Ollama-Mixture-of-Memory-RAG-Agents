@@ -20,6 +20,8 @@ Mycomind Daemon is an advanced implementation of a Mixture-of-Memory-RAG-Agents 
   <img src="assets/gradioui.png" alt="Mycomind Daemon UI" style="width: 100%; max-width: 600px;" />
 </div>
 
+---
+
 ## How It Works
 
 1. User input is processed by multiple reference models.
@@ -63,6 +65,20 @@ Mycomind Daemon employs a sophisticated three-tier memory system:
 
 2. **Archival Memory**: Archives general information and events about user interactions for long-term recall.
 3. **Conversation History**: Maintains a searchable log of recent interactions for immediate context.
+
+---
+
+## Performance Optimization
+
+### Parallel Processing of Reference Models
+
+One of the key performance improvements in this system is the parallel processing of user prompts across multiple reference models. This optimization significantly reduces overall inference time.
+
+- **Batched Prompts**: Instead of querying each reference model sequentially, the system batches the user's prompt and sends it to all reference models simultaneously.
+- **Parallel Execution**: Utilizing asynchronous programming techniques, the system processes responses from multiple models concurrently.
+- **Reduced Latency**: This parallel approach substantially decreases the total time required to gather insights from all reference models.
+
+---
 
 ## Setup and Configuration
 
@@ -125,6 +141,7 @@ OLLAMA_MAX_LOADED_MODELS=4
 
 3. Open your web browser and navigate to the URL provided by Gradio (usually http://localhost:7860).
 
+---
 
 ## Contributing
 
@@ -132,6 +149,6 @@ We welcome contributions to enhance Mycomind Daemon. Feel free to submit pull re
 
 ## License
 
-This project is licensed under MIT.
+This project is licensed under the terms specified in the original MoA repository. Please refer to the original source for detailed licensing information.
 
 ---
