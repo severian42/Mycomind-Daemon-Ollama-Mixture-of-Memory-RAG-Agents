@@ -374,11 +374,21 @@ def create_gradio_interface():
                 return "RAG configuration updated successfully"
 
             def get_rag_status():
-                return {
-                    "Document Count": moa_config["mixture"].rag.get_document_count(),
-                    "Index Size": moa_config["mixture"].rag.get_index_size(),
-                    "Current Configuration": moa_config["mixture"].rag.get_config()
+                rag = moa_config["mixture"].rag
+                status = {
+                    "Index Size": rag.get_index_size() if hasattr(rag, 'get_index_size') else "Not available",
+                    "Current Configuration": rag.get_config() if hasattr(rag, 'get_config') else "Not available"
                 }
+                
+                # Try to get document count if the method exists
+                if hasattr(rag, 'get_document_count'):
+                    status["Document Count"] = rag.get_document_count()
+                elif hasattr(rag, 'index') and hasattr(rag.index, '__len__'):
+                    status["Document Count"] = len(rag.index)
+                else:
+                    status["Document Count"] = "Not available"
+                
+                return status
 
             update_rag_config_btn = gr.Button("Update RAG Configuration")
             update_rag_config_status = gr.Textbox(label="Update Status", interactive=False)
