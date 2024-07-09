@@ -68,7 +68,9 @@ def initialize_moa():
 initialize_moa()
 
 def create_agent(model, name, system_prompt, **params):
-    return OllamaAgent(model, name, system_prompt, **params)
+    supported_params = ['model', 'name', 'system_prompt']  # Add any other supported parameters here
+    filtered_params = {k: v for k, v in params.items() if k in supported_params}
+    return OllamaAgent(model, name, system_prompt, **filtered_params)
 
 def clear_core_memory():
     if isinstance(moa_config["mixture"], OllamaMixtureOfAgents):
@@ -154,7 +156,7 @@ def update_model_params(model_name):
         elif param == "num_ctx":
             components.append(gr.Slider(minimum=128, maximum=4096, value=2048, step=128, label="Context Length"))
     
-    return gr.Group.update(visible=True, children=components)
+    return components
 
 def update_agent_config(old_agent_name, model, new_name, prompt, **params):
     new_agent = create_agent(model, new_name, prompt, **params)
@@ -504,4 +506,4 @@ if __name__ == "__main__":
     initialize_moa()
     demo = create_gradio_interface()
     demo.queue()
-    demo.launch()
+    demo.launch(share=True)
