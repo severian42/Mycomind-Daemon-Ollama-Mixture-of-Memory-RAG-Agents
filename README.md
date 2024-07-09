@@ -1,6 +1,6 @@
-# Mycomind Daemon: Advanced Mixture-of-Agents (MoA) Cognitive Assistant
+# Mycomind Daemon: Advanced Mixture-of-Memory-RAG-Agents (MoMRA) Cognitive Assistant
 
-Mycomind Daemon is a cutting-edge implementation of the Mixture-of-Agents (MoA) concept, inspired by the vast, interconnected networks of fungal mycelium. This innovative system combines multiple AI models to create a cognitive network that processes information and manages tasks in the background, much like a daemon process in computing.
+Mycomind Daemon is a cutting-edge implementation of the Mixture-of-Memory-RAG-Agents (MoMRA) concept, inspired by the vast, interconnected networks of fungal mycelium. This innovative system combines multiple AI models to create a cognitive network that processes information and manages tasks in the background, much like a daemon process in computing.
 
 ## What is Mycomind Daemon?
 
@@ -85,6 +85,13 @@ OLLAMA_MAX_LOADED_MODELS=4
    conda activate moa
    gradio app.py
    ```
+   OR Launch the CLI APP:
+
+   ```shell
+   conda activate moa
+   python omoa.py
+   ```
+
 
 3. Open your web browser and navigate to the URL provided by Gradio (usually http://localhost:7860).
 
