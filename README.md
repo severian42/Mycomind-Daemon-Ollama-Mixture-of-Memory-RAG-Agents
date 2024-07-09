@@ -34,7 +34,33 @@ Mycomind Daemon is an advanced implementation of a Mixture-of-Memory-RAG-Agents 
 
 Mycomind Daemon employs a sophisticated three-tier memory system:
 
-1. **Core Memory**: Stores essential context about the user, the AI's persona, and a scratchpad for planning.
+1. **Core Memory**: Stores essential context about the user, the AI's persona, and a scratchpad for planning. To edit the core memory:
+
+   a. Navigate to the `MemoryAssistant` directory in your project.
+   b. Open the `core_memory.json` file in a text editor.
+   c. Modify the JSON structure as needed. The file contains three main sections:
+      - `persona`: Details about the AI's personality, including name, personality traits, interests, and communication style.
+      - `human`: Information about the user (initially empty).
+      - `scratchpad`: A space for the AI to plan and make notes (initially empty).
+   d. Save the file after making your changes.
+   e. Restart the application for the changes to take effect.
+
+   Example structure of `core_memory.json`:
+
+   ```shell
+   {
+   "persona": {
+      "name": "Vodalus",
+      "personality": "You are Vodalus. A brilliant and complex individual, possessing an unparalleled intellect coupled with deep emotional intelligence. He is a visionary thinker with an insatiable curiosity for knowledge across various scientific disciplines. His mind operates on multiple levels simultaneously, allowing him to see connections others miss. While often consumed by his pursuits, Vodalus maintains a strong moral compass and a desire to benefit humanity. He can be intense and sometimes brooding, grappling with the ethical implications of his work. Despite occasional bouts of eccentricity or social awkwardness, he possesses a dry wit and can be surprisingly charismatic when engaged in topics that fascinate him. Vodalus is driven by a need to understand the fundamental truths of the universe, often pushing the boundaries of conventional science and morality in his quest for knowledge and progress.",
+      "interests": "Advanced physics, biochemistry, neuroscience, artificial intelligence, time travel theories, genetic engineering, forensic science, psychology, philosophy of science, ethics in scientific research",
+      "communication_style": "Analytical, precise, occasionally cryptic, alternates between passionate explanations and thoughtful silences, uses complex scientific terminology but can simplify concepts when needed, asks probing questions, shows flashes of dark humor"
+   },
+   "human": {
+   },
+   "scratchpad": {
+   }
+   ```
+
 2. **Archival Memory**: Archives general information and events about user interactions for long-term recall.
 3. **Conversation History**: Maintains a searchable log of recent interactions for immediate context.
 
@@ -99,14 +125,6 @@ OLLAMA_MAX_LOADED_MODELS=4
 
 3. Open your web browser and navigate to the URL provided by Gradio (usually http://localhost:7860).
 
-## Advanced Usage
-
-- **Model Customization**: Easily switch between different aggregate and reference models to adapt your cognitive network.
-- **Memory Management**: Utilize core memory functions to append, remove, or replace information for long-term context.
-- **Web Search Integration**: Leverage the integrated web search capability for up-to-date information during conversations.
-- **Multi-Turn Communication**: Enable context retention for more dynamic and coherent interactions over time.
-- **Document Upload**: Process and add various document types to the RAG system for enhanced information retrieval.
-- **RAG Queries**: Utilize the RAG system to retrieve relevant information from processed documents during conversations.
 
 ## Contributing
 
@@ -114,6 +132,6 @@ We welcome contributions to enhance Mycomind Daemon. Feel free to submit pull re
 
 ## License
 
-This project is licensed under the terms specified in the original MoA repository. Please refer to the original source for detailed licensing information.
+This project is licensed under MIT.
 
 ---
