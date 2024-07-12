@@ -1,0 +1,11 @@
+curl -X POST http://localhost:8000/chat/completions \
+-H "Content-Type: application/json" \
+-d '{
+  "model": "moa",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "What are the three laws of robotics?"}
+  ],
+  "temperature": 0.7,
+  "max_tokens": 1000
+}'
