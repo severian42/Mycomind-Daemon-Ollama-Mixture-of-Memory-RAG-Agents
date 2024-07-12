@@ -495,6 +495,20 @@ def create_gradio_interface():
                 outputs=[web_search_status]
             )
 
+        with gr.Tab("API Management"):
+            gr.Markdown("### API Server Management")
+            with gr.Row():
+                api_status = gr.Textbox(label="API Server Status", value="Stopped", interactive=False)
+                api_port = gr.Number(label="API Port", value=8000, precision=0)
+            with gr.Row():
+                start_api_btn = gr.Button("Start API Server")
+                stop_api_btn = gr.Button("Stop API Server")
+            
+            gr.Markdown("### API Server Logs")
+            with gr.Row():
+                api_logs = gr.TextArea(label="API Logs", interactive=False, lines=10)
+                refresh_logs_btn = gr.Button("Refresh Logs")
+
         msg.submit(chat, inputs=[msg, chatbot], outputs=[chatbot, processing_log])
         send_btn.click(chat, inputs=[msg, chatbot], outputs=[chatbot, processing_log])
         clear_btn.click(lambda: ([], ""), outputs=[chatbot, processing_log])
@@ -527,6 +541,63 @@ def create_gradio_interface():
             inputs=[old_content, new_content],
             outputs=[edit_archival_status]
         )
+
+
+        def start_api_server(port):
+            global api_process
+            if api_process is None or not psutil.pid_exists(api_process.pid):
+                api_process = subprocess.Popen(
+                    ["python", "api.py", "--port", str(port)],
+                    stdout=open(log_file_path, "w"),
+                    stderr=subprocess.STDOUT
+                )
+                return f"API server started on port {port}"
+            else:
+                return "API server is already running"
+
+        def stop_api_server():
+            global api_process
+            if api_process is not None and psutil.pid_exists(api_process.pid):
+                parent = psutil.Process(api_process.pid)
+                for child in parent.children(recursive=True):
+                    child.terminate()
+                parent.terminate()
+                api_process = None
+                return "API server stopped"
+            else:
+                return "API server is not running"
+
+        def check_api_status():
+            global api_process
+            if api_process is not None and psutil.pid_exists(api_process.pid):
+                return "Running"
+            else:
+                return "Stopped"
+
+        def read_api_logs():
+            if os.path.exists(log_file_path):
+                with open(log_file_path, "r") as f:
+                    return f.read()
+            return "No logs available"
+
+        start_api_btn.click(
+            start_api_server,
+            inputs=[api_port],
+            outputs=[api_status]
+        )
+
+        stop_api_btn.click(
+            stop_api_server,
+            outputs=[api_status]
+        )
+
+        refresh_logs_btn.click(
+            read_api_logs,
+            outputs=[api_logs]
+        )
+
+        demo.load(check_api_status, outputs=[api_status])
+        demo.load(read_api_logs, outputs=[api_logs])
 
     return demo
 
